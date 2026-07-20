@@ -188,16 +188,6 @@
     <div class="wave"></div>
   </header>
 
-  <div class="disclosure" id="storageNotice">
-    ⓘ Aqui você só vê os horários já lançados <strong>do dia selecionado</strong>, para poder completar o resto. A planilha completa e o relatório só ficam visíveis com o PIN do gestor, em "🔒 Acesso do gestor" no rodapé.
-  </div>
-
-  <nav class="tabs">
-    <button class="active" data-tab="novo">Novo Lançamento</button>
-    <button data-tab="lista" id="tabBtnLista" style="display:none;">Lançamentos (Planilha)</button>
-    <button data-tab="relatorio" id="tabBtnRelatorio" style="display:none;">Relatório</button>
-  </nav>
-
   <!-- NOVO LANÇAMENTO -->
   <section id="tab-novo">
     <div class="card">
@@ -236,102 +226,6 @@
     </div>
   </section>
 
-  <!-- LISTA / PLANILHA -->
-  <section id="tab-lista" style="display:none;">
-    <div class="card">
-      <h2>Planilha automática<span class="sub">Gerada a partir de todos os lançamentos preenchidos no formulário.</span></h2>
-      <div class="actions-bar" style="margin-bottom:14px;">
-        <span style="font-size:0.85rem;color:var(--muted);" id="listaCount">0 lançamentos</span>
-        <span>
-          <button class="secondary" id="btnRefreshLista">🔄 Atualizar</button>
-          <button class="secondary" id="btnExportLista">⇩ Exportar CSV</button>
-        </span>
-      </div>
-      <div class="table-wrap">
-        <table id="tabelaLista">
-          <thead>
-            <tr>
-              <th>Data</th><th>Dia da Semana</th><th>DU/FDS</th><th>Horário</th><th>Sentido</th>
-              <th class="num">Morador</th><th class="num">N. Cad.</th><th class="num">Idosos</th>
-              <th class="num">Estud.</th><th class="num">Cç &lt;5</th><th class="num">Mãe Al.</th>
-              <th class="num">Gráv.</th><th class="num">PNE</th><th class="num">Total</th><th></th>
-            </tr>
-          </thead>
-          <tbody id="listaBody"></tbody>
-          <tfoot id="listaFoot"></tfoot>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- RELATÓRIO -->
-  <section id="tab-relatorio" style="display:none;">
-    <div class="card">
-      <h2>Relatório por período<span class="sub">Filtre por intervalo de datas, horário, sentido e tipo de dia.</span></h2>
-      <div class="row">
-        <div class="field"><label>Data início</label><input type="date" id="rDataIni"></div>
-        <div class="field"><label>Data fim</label><input type="date" id="rDataFim"></div>
-        <div class="field">
-          <label>Horário de</label>
-          <select id="rHorarioIni"><option value="">Todos</option></select>
-        </div>
-        <div class="field">
-          <label>Horário até</label>
-          <select id="rHorarioFim"><option value="">Todos</option></select>
-        </div>
-        <div class="field">
-          <label>Sentido</label>
-          <select id="rSentido">
-            <option value="">Todos</option>
-            <option value="Ida (Lagoa/Costa)">Ida (Lagoa/Costa)</option>
-            <option value="Volta (Costa/Lagoa)">Volta (Costa/Lagoa)</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Tipo de dia</label>
-          <select id="rDuFds">
-            <option value="">Todos</option>
-            <option value="DU">Dia útil (DU)</option>
-            <option value="FDS">Fim de semana (FDS)</option>
-          </select>
-        </div>
-      </div>
-      <div class="actions-bar" style="margin-bottom:4px;">
-        <button class="primary" id="btnGerarRelatorio">Gerar relatório</button>
-        <button class="secondary" id="btnExportRelatorio">⇩ Exportar CSV</button>
-      </div>
-    </div>
-
-    <div id="relatorioResultados" style="display:none;">
-      <div class="summary-grid">
-        <div class="summary-card"><div class="n" id="sViagens">0</div><div class="l">Viagens no período</div></div>
-        <div class="summary-card"><div class="n" id="sPassageiros">0</div><div class="l">Total de passageiros</div></div>
-        <div class="summary-card"><div class="n" id="sMedia">0</div><div class="l">Média de passageiros / viagem</div></div>
-      </div>
-      <div class="card">
-        <h2>Detalhamento<span class="sub">Viagens que correspondem aos filtros selecionados.</span></h2>
-        <div class="table-wrap">
-          <table id="tabelaRelatorio">
-            <thead>
-              <tr>
-                <th>Data</th><th>Dia da Semana</th><th>DU/FDS</th><th>Horário</th><th>Sentido</th>
-                <th class="num">Morador</th><th class="num">N. Cad.</th><th class="num">Idosos</th>
-                <th class="num">Estud.</th><th class="num">Cç &lt;5</th><th class="num">Mãe Al.</th>
-                <th class="num">Gráv.</th><th class="num">PNE</th><th class="num">Total</th>
-              </tr>
-            </thead>
-            <tbody id="relBody"></tbody>
-            <tfoot id="relFoot"></tfoot>
-          </table>
-        </div>
-      </div>
-    </div>
-  </section>
-
-</div>
-
-<div style="text-align:center;margin-top:4px;">
-  <button id="btnUnlockManager" style="background:none;border:none;color:var(--muted);font-size:0.75rem;cursor:pointer;text-decoration:underline;font-family:'Inter',sans-serif;">🔒 Acesso do gestor</button>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -351,8 +245,6 @@ const COUNT_FIELDS = [
   {id:'cPne', key:'pne', label:'PNE'}
 ];
 
-let entries = [];
-let managerToken = null; // preenchido só depois que o gestor digita o PIN correto
 
 function pad(n){return String(n).padStart(2,'0');}
 function toISODate(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
@@ -381,21 +273,6 @@ function showToast(msg, isError){
 }
 
 // ---------- Armazenamento (Google Sheets via Apps Script) ----------
-async function sha256Hex(str){
-  const enc = new TextEncoder().encode(str);
-  const buf = await crypto.subtle.digest('SHA-256', enc);
-  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
-}
-async function loadEntriesAuthed(token){
-  try{
-    const res = await fetch(APPS_SCRIPT_URL + '?action=list&token=' + encodeURIComponent(token));
-    const data = await res.json();
-    if(data && data.error) return {ok:false, data:[]};
-    return {ok:true, data: Array.isArray(data) ? data : []};
-  }catch(e){
-    return {ok:false, data:[]};
-  }
-}
 async function listEntriesByDateRemote(dateISO){
   try{
     const res = await fetch(APPS_SCRIPT_URL + '?action=listByDate&date=' + encodeURIComponent(dateISO));
@@ -418,39 +295,6 @@ async function upsertDayRemote(dateISO, items){
     return false;
   }
 }
-
-async function deleteEntryRemote(id){
-  try{
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: 'POST',
-      headers: {'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({action:'delete', id, token: managerToken})
-    });
-    const data = await res.json();
-    return !!data.ok;
-  }catch(e){
-    return false;
-  }
-}
-async function refreshEntries(){
-  if(!managerToken) return;
-  const result = await loadEntriesAuthed(managerToken);
-  if(result.ok) entries = result.data;
-  populateReportHorarioOptions();
-  renderLista();
-}
-
-// ---------- Tabs ----------
-document.querySelectorAll('nav.tabs button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    ['novo','lista','relatorio'].forEach(t=>{
-      document.getElementById('tab-'+t).style.display = (t===btn.dataset.tab) ? '' : 'none';
-    });
-    if(btn.dataset.tab === 'lista') renderLista();
-  });
-});
 
 // ---------- Novo Lançamento: grade do dia ----------
 const fData = document.getElementById('fData');
@@ -597,176 +441,11 @@ document.getElementById('btnSalvarDia').addEventListener('click', async ()=>{
   }
 });
 
-// ---------- Lista / Planilha ----------
-function rowCells(e){
-  return `<td>${formatBR(e.data)}</td><td>${cap(e.diaSemana)}</td><td>${e.duFds}</td><td>${e.horario}</td><td>${e.sentido}</td>`+
-    COUNT_FIELDS.map(f=>`<td class="num">${e[f.key]||0}</td>`).join('') +
-    `<td class="num" style="font-weight:700">${e.total}</td>`;
-}
-function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
-
-function sortedEntries(list){
-  return [...list].sort((a,b)=> (a.data+a.horario).localeCompare(b.data+b.horario));
-}
-
-function renderLista(){
-  const body = document.getElementById('listaBody');
-  const foot = document.getElementById('listaFoot');
-  const count = document.getElementById('listaCount');
-  const sorted = sortedEntries(entries);
-  count.textContent = sorted.length + (sorted.length===1 ? ' lançamento' : ' lançamentos');
-
-  if(sorted.length===0){
-    body.innerHTML = `<tr><td colspan="15" class="empty">Nenhum lançamento registrado ainda. Use a aba "Novo Lançamento" para começar.</td></tr>`;
-    foot.innerHTML = '';
-    return;
-  }
-  body.innerHTML = sorted.map(e=>`<tr>${rowCells(e)}<td><button class="del-btn" data-id="${e.id}" title="Excluir">✕</button></td></tr>`).join('');
-  const totals = COUNT_FIELDS.map(f=> sorted.reduce((s,e)=>s+(e[f.key]||0),0));
-  const totalGeral = sorted.reduce((s,e)=>s+(e.total||0),0);
-  foot.innerHTML = `<tr><td colspan="5">TOTAL</td>${totals.map(t=>`<td class="num">${t}</td>`).join('')}<td class="num">${totalGeral}</td><td></td></tr>`;
-
-  body.querySelectorAll('.del-btn').forEach(btn=>{
-    btn.addEventListener('click', async ()=>{
-      const id = btn.dataset.id;
-      btn.disabled = true;
-      const ok = await deleteEntryRemote(id);
-      if(ok){
-        entries = entries.filter(e=>e.id!==id);
-        showToast('Lançamento excluído.');
-        renderLista();
-        populateReportHorarioOptions();
-      }else{
-        btn.disabled = false;
-        showToast('Não foi possível excluir.', true);
-      }
-    });
-  });
-}
-
-function toCSV(list){
-  const header = ['Data','Dia da Semana','DU/FDS','Horário','Sentido',...COUNT_FIELDS.map(f=>f.label),'Total'];
-  const lines = [header.join(';')];
-  list.forEach(e=>{
-    const row = [formatBR(e.data), cap(e.diaSemana), e.duFds, e.horario, e.sentido, ...COUNT_FIELDS.map(f=>e[f.key]||0), e.total];
-    lines.push(row.join(';'));
-  });
-  return lines.join('\n');
-}
-function downloadCSV(content, filename){
-  const blob = new Blob(['\uFEFF'+content], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-}
-document.getElementById('btnExportLista').addEventListener('click', ()=>{
-  downloadCSV(toCSV(sortedEntries(entries)), 'lancamentos_viagem_lagoa_costa.csv');
-});
-document.getElementById('btnRefreshLista').addEventListener('click', async ()=>{
-  const btn = document.getElementById('btnRefreshLista');
-  btn.disabled = true;
-  await refreshEntries();
-  btn.disabled = false;
-  showToast('Lista atualizada.');
-});
-
-// ---------- Relatório ----------
+// ---------- Utilitário ----------
 function toMinutes(h){
   const [hh,mm] = h.split(':').map(Number);
   return hh*60+mm;
 }
-function populateReportHorarioOptions(){
-  const selIni = document.getElementById('rHorarioIni');
-  const selFim = document.getElementById('rHorarioFim');
-  const currentIni = selIni.value;
-  const currentFim = selFim.value;
-  const all = [...HORARIOS].sort((a,b)=> toMinutes(a)-toMinutes(b));
-  const opts = '<option value="">Todos</option>' + all.map(h=>`<option value="${h}">${h}</option>`).join('');
-  selIni.innerHTML = opts;
-  selFim.innerHTML = opts;
-  selIni.value = currentIni || '';
-  selFim.value = currentFim || '';
-}
-
-let ultimoFiltro = [];
-
-function gerarRelatorio(){
-  const ini = document.getElementById('rDataIni').value;
-  const fim = document.getElementById('rDataFim').value;
-  const horarioIni = document.getElementById('rHorarioIni').value;
-  const horarioFim = document.getElementById('rHorarioFim').value;
-  const sentido = document.getElementById('rSentido').value;
-  const duFds = document.getElementById('rDuFds').value;
-
-  const minIni = horarioIni ? toMinutes(horarioIni) : null;
-  const minFim = horarioFim ? toMinutes(horarioFim) : null;
-
-  let filtrado = entries.filter(e=>{
-    if(ini && e.data < ini) return false;
-    if(fim && e.data > fim) return false;
-    if(minIni !== null && toMinutes(e.horario) < minIni) return false;
-    if(minFim !== null && toMinutes(e.horario) > minFim) return false;
-    if(sentido && e.sentido !== sentido) return false;
-    if(duFds && e.duFds !== duFds) return false;
-    return true;
-  });
-  filtrado = sortedEntries(filtrado);
-  ultimoFiltro = filtrado;
-
-  document.getElementById('relatorioResultados').style.display = '';
-  document.getElementById('sViagens').textContent = filtrado.length;
-  const totalPax = filtrado.reduce((s,e)=>s+(e.total||0),0);
-  document.getElementById('sPassageiros').textContent = totalPax;
-  document.getElementById('sMedia').textContent = filtrado.length ? (totalPax/filtrado.length).toFixed(1) : '0';
-
-  const body = document.getElementById('relBody');
-  const foot = document.getElementById('relFoot');
-  if(filtrado.length===0){
-    body.innerHTML = `<tr><td colspan="14" class="empty">Nenhuma viagem encontrada para os filtros selecionados.</td></tr>`;
-    foot.innerHTML = '';
-    return;
-  }
-  body.innerHTML = filtrado.map(e=>`<tr>${rowCells(e)}</tr>`).join('');
-  const totals = COUNT_FIELDS.map(f=> filtrado.reduce((s,e)=>s+(e[f.key]||0),0));
-  foot.innerHTML = `<tr><td colspan="5">TOTAL</td>${totals.map(t=>`<td class="num">${t}</td>`).join('')}<td class="num">${totalPax}</td></tr>`;
-}
-document.getElementById('btnGerarRelatorio').addEventListener('click', async ()=>{
-  const btn = document.getElementById('btnGerarRelatorio');
-  btn.disabled = true;
-  if(managerToken){
-    const result = await loadEntriesAuthed(managerToken);
-    if(result.ok) entries = result.data;
-  }
-  gerarRelatorio();
-  btn.disabled = false;
-});
-document.getElementById('btnExportRelatorio').addEventListener('click', ()=>{
-  if(ultimoFiltro.length===0){ showToast('Gere o relatório antes de exportar.', true); return; }
-  downloadCSV(toCSV(ultimoFiltro), 'relatorio_viagem_lagoa_costa.csv');
-});
-
-document.getElementById('btnUnlockManager').addEventListener('click', async ()=>{
-  const pin = window.prompt('Digite o PIN de acesso do gestor:');
-  if(pin === null || pin === '') return;
-  const hash = await sha256Hex(pin);
-  const btn = document.getElementById('btnUnlockManager');
-  btn.disabled = true;
-  const result = await loadEntriesAuthed(hash);
-  btn.disabled = false;
-  if(result.ok){
-    managerToken = hash;
-    entries = result.data;
-    document.getElementById('tabBtnLista').style.display = '';
-    document.getElementById('tabBtnRelatorio').style.display = '';
-    populateReportHorarioOptions();
-    renderLista();
-    showToast('Acesso liberado.');
-  }else{
-    showToast('PIN incorreto.', true);
-  }
-});
 
 // ---------- Init ----------
 function init(){
