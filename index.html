@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ficha de Viagem — Lagoa ⇄ Costa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0d2b3e;
+    --navy-deep:#082029;
+    --teal:#1b6b78;
+    --teal-light:#2f8a97;
+    --sand:#eee3cb;
+    --sand-line:#d8c9a3;
+    --coral:#e07a3e;
+    --coral-dark:#c4632b;
+    --ink:#12303f;
+    --muted:#5e7684;
+    --white:#ffffff;
+    --good:#2f8a5c;
+    --bad:#c14444;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Inter',system-ui,sans-serif;
+    background:
+      radial-gradient(1200px 500px at 10% -10%, rgba(47,138,151,0.15), transparent 60%),
+      var(--sand);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  .app{max-width:1100px;margin:0 auto;padding:28px 20px 60px;}
+
+  header.top{
+    background:linear-gradient(135deg,var(--navy) 0%, var(--navy-deep) 100%);
+    border-radius:var(--radius);
+    padding:26px 28px;
+    color:var(--white);
+    position:relative;
+    overflow:hidden;
+    margin-bottom:22px;
+  }
+  header.top .wave{
+    position:absolute; left:0; right:0; bottom:-2px; height:34px;
+    background: repeating-linear-gradient(90deg, transparent 0 18px, rgba(255,255,255,0.06) 18px 36px);
+  }
+  header.top svg.route{position:absolute; right:18px; top:18px; opacity:0.5;}
+  header.top h1{
+    font-family:'Manrope',sans-serif; font-weight:800; font-size:1.5rem; margin:0 0 4px;
+    letter-spacing:-0.01em;
+  }
+  header.top p{margin:0; color:#bcd6dd; font-size:0.92rem;}
+  .route-tag{
+    display:inline-flex; align-items:center; gap:8px; margin-top:12px;
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.18);
+    padding:6px 14px; border-radius:999px; font-size:0.82rem; color:#dfeef1;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--coral);}
+
+  nav.tabs{
+    display:flex; gap:6px; background:var(--white); padding:6px; border-radius:var(--radius);
+    margin-bottom:20px; box-shadow:0 1px 2px rgba(13,43,62,0.08); flex-wrap:wrap;
+  }
+  nav.tabs button{
+    flex:1; min-width:150px; border:none; background:transparent; padding:12px 14px;
+    font-family:'Manrope',sans-serif; font-weight:700; font-size:0.88rem; color:var(--muted);
+    border-radius:9px; cursor:pointer; transition:all .15s ease;
+  }
+  nav.tabs button.active{background:var(--navy); color:var(--white);}
+  nav.tabs button:not(.active):hover{background:var(--sand);}
+
+  .card{
+    background:var(--white); border-radius:var(--radius); padding:24px;
+    box-shadow:0 1px 3px rgba(13,43,62,0.08); margin-bottom:18px;
+  }
+  .card h2{font-family:'Manrope',sans-serif; font-size:1.05rem; margin:0 0 18px; color:var(--navy);}
+  .card h2 .sub{display:block; font-family:'Inter',sans-serif; font-weight:400; font-size:0.8rem; color:var(--muted); margin-top:2px;}
+
+  .row{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:16px;}
+  .field{flex:1; min-width:160px; display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:0.78rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.03em;}
+  .field input, .field select{
+    border:1.5px solid var(--sand-line); border-radius:9px; padding:10px 12px;
+    font-size:0.95rem; font-family:'Inter',sans-serif; color:var(--ink); background:var(--white);
+  }
+  .field input:focus, .field select:focus{outline:none; border-color:var(--teal);}
+  .badge-row{display:flex; gap:8px; align-items:center; margin-top:2px;}
+  .badge{padding:5px 11px; border-radius:7px; font-size:0.78rem; font-weight:700;}
+  .badge.du{background:#e3f1ee; color:var(--good);}
+  .badge.fds{background:#fbe9e2; color:var(--coral-dark);}
+  .badge.dia{background:var(--sand); color:var(--navy);}
+
+  .counts-grid{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px;
+  }
+  @media (max-width:700px){.counts-grid{grid-template-columns:repeat(2,1fr);}}
+  .counts-grid .field input{text-align:center; font-weight:600;}
+
+  .total-box{
+    display:flex; align-items:center; justify-content:space-between;
+    background:var(--navy); color:var(--white); border-radius:11px; padding:16px 20px; margin-bottom:18px;
+  }
+  .total-box .label{font-family:'Manrope',sans-serif; font-weight:700; font-size:0.9rem; color:#bcd6dd;}
+  .total-box .value{font-family:'Manrope',sans-serif; font-weight:800; font-size:1.8rem;}
+
+  button.primary{
+    background:var(--coral); color:var(--white); border:none; padding:13px 26px;
+    border-radius:9px; font-family:'Manrope',sans-serif; font-weight:700; font-size:0.92rem;
+    cursor:pointer; transition:background .15s ease;
+  }
+  button.primary:hover{background:var(--coral-dark);}
+  button.secondary{
+    background:var(--white); color:var(--teal); border:1.5px solid var(--teal);
+    padding:10px 18px; border-radius:9px; font-family:'Manrope',sans-serif; font-weight:700;
+    font-size:0.85rem; cursor:pointer;
+  }
+  button.secondary:hover{background:#eef7f8;}
+  .actions-bar{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+
+  table{width:100%; border-collapse:collapse; font-size:0.86rem;}
+  thead th{
+    text-align:left; padding:9px 8px; background:var(--sand); color:var(--navy);
+    font-family:'Manrope',sans-serif; font-weight:700; font-size:0.72rem; text-transform:uppercase;
+    letter-spacing:0.02em; position:sticky; top:0;
+  }
+  tbody td{padding:9px 8px; border-bottom:1px solid #eee2cc; color:var(--ink);}
+  tbody tr:hover{background:#fbf8f0;}
+  td.num, th.num{text-align:right; font-variant-numeric:tabular-nums;}
+  .table-wrap{overflow-x:auto; max-height:480px; overflow-y:auto; border-radius:9px; border:1px solid #eee2cc;}
+  .del-btn{background:none; border:none; color:var(--bad); cursor:pointer; font-size:1rem;}
+  tfoot td{font-weight:700; background:#faf5e8; font-family:'Manrope',sans-serif;}
+
+  .empty{text-align:center; padding:40px 20px; color:var(--muted);}
+  .empty svg{opacity:0.4; margin-bottom:10px;}
+
+  .toast{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:var(--navy); color:var(--white); padding:12px 22px; border-radius:9px;
+    font-family:'Manrope',sans-serif; font-weight:600; font-size:0.88rem; opacity:0; transition:all .25s ease;
+    pointer-events:none; box-shadow:0 4px 16px rgba(0,0,0,0.2); z-index:50;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+
+  .summary-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:20px;}
+  @media (max-width:700px){.summary-grid{grid-template-columns:1fr;}}
+  .summary-card{background:var(--sand); border-radius:11px; padding:16px 18px;}
+  .summary-card .n{font-family:'Manrope',sans-serif; font-weight:800; font-size:1.6rem; color:var(--navy);}
+  .summary-card .l{font-size:0.78rem; color:var(--muted); font-weight:600;}
+
+  .disclosure{
+    font-size:0.78rem; color:var(--muted); background:#eef7f8; border:1px solid #d7e9eb;
+    border-radius:9px; padding:10px 14px; margin-bottom:18px; display:flex; gap:8px; align-items:flex-start;
+  }
+
+  #diaTable td, #diaTable th{white-space:nowrap;}
+  #diaTable .sentidoSelect{
+    border:1.5px solid var(--sand-line); border-radius:7px; padding:6px 8px;
+    font-size:0.82rem; font-family:'Inter',sans-serif; color:var(--ink); background:var(--white);
+    min-width:150px;
+  }
+  #diaTable .sentidoSelect.filled{border-color:var(--teal); background:#eef7f8;}
+  #diaTable .rowCount{
+    width:44px; text-align:center; border:1.5px solid var(--sand-line); border-radius:7px;
+    padding:6px 4px; font-size:0.85rem; font-family:'Inter',sans-serif;
+  }
+  #diaTable .rowCount:focus, #diaTable .sentidoSelect:focus{outline:none; border-color:var(--teal);}
+  #diaTable .rowTotal{font-weight:700; color:var(--navy); text-align:right;}
+  #diaTable tr.linha-preenchida{background:#fbf8f0;}
+  #diaTable td.horario-label{font-weight:700; color:var(--navy); font-family:'Manrope',sans-serif;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="top">
+    <svg class="route" width="90" height="40" viewBox="0 0 90 40" fill="none">
+      <circle cx="10" cy="20" r="6" fill="#e07a3e"/>
+      <path d="M16 20 H74" stroke="#bcd6dd" stroke-width="2" stroke-dasharray="4 4"/>
+      <circle cx="80" cy="20" r="6" fill="#2f8a97"/>
+    </svg>
+    <h1>Ficha de Acompanhamento de Viagem</h1>
+    <p>Travessia Lagoa ⇄ Costa · Registro digital de embarque</p>
+    <span class="route-tag"><span class="dot"></span> Substitui o preenchimento manual em papel</span>
+    <div class="wave"></div>
+  </header>
+
+  <div class="disclosure" id="storageNotice">
+    ⓘ Aqui você só vê os horários já lançados <strong>do dia selecionado</strong>, para poder completar o resto. A planilha completa e o relatório só ficam visíveis com o PIN do gestor, em "🔒 Acesso do gestor" no rodapé.
+  </div>
+
+  <nav class="tabs">
+    <button class="active" data-tab="novo">Novo Lançamento</button>
+    <button data-tab="lista" id="tabBtnLista" style="display:none;">Lançamentos (Planilha)</button>
+    <button data-tab="relatorio" id="tabBtnRelatorio" style="display:none;">Relatório</button>
+  </nav>
+
+  <!-- NOVO LANÇAMENTO -->
+  <section id="tab-novo">
+    <div class="card">
+      <h2>Registrar viagens do dia<span class="sub">Escolha a data e preencha só os horários que tiveram viagem — o resto pode ficar em branco.</span></h2>
+
+      <div class="row">
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="fData">
+        </div>
+      </div>
+      <div class="badge-row" style="margin-bottom:20px;">
+        <span class="badge dia" id="badgeDia">—</span>
+        <span class="badge du" id="badgeDuFds" style="display:none;">DU</span>
+        <span style="font-size:0.78rem;color:var(--muted);" id="diaStatusMsg"></span>
+      </div>
+
+      <div class="table-wrap" style="max-height:none;">
+        <table id="diaTable">
+          <thead>
+            <tr>
+              <th>Horário</th><th>Sentido</th>
+              <th class="num">Morador</th><th class="num">N. Cad.</th><th class="num">Idosos</th>
+              <th class="num">Estud.</th><th class="num">Cç &lt;5</th><th class="num">Mãe Al.</th>
+              <th class="num">Gráv.</th><th class="num">PNE</th><th class="num">Total</th>
+            </tr>
+          </thead>
+          <tbody id="diaTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="actions-bar" style="margin-top:18px;">
+        <button class="primary" id="btnSalvarDia">Salvar dia</button>
+        <span style="font-size:0.8rem;color:var(--muted);" id="statusMsg"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- LISTA / PLANILHA -->
+  <section id="tab-lista" style="display:none;">
+    <div class="card">
+      <h2>Planilha automática<span class="sub">Gerada a partir de todos os lançamentos preenchidos no formulário.</span></h2>
+      <div class="actions-bar" style="margin-bottom:14px;">
+        <span style="font-size:0.85rem;color:var(--muted);" id="listaCount">0 lançamentos</span>
+        <span>
+          <button class="secondary" id="btnRefreshLista">🔄 Atualizar</button>
+          <button class="secondary" id="btnExportLista">⇩ Exportar CSV</button>
+        </span>
+      </div>
+      <div class="table-wrap">
+        <table id="tabelaLista">
+          <thead>
+            <tr>
+              <th>Data</th><th>Dia da Semana</th><th>DU/FDS</th><th>Horário</th><th>Sentido</th>
+              <th class="num">Morador</th><th class="num">N. Cad.</th><th class="num">Idosos</th>
+              <th class="num">Estud.</th><th class="num">Cç &lt;5</th><th class="num">Mãe Al.</th>
+              <th class="num">Gráv.</th><th class="num">PNE</th><th class="num">Total</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="listaBody"></tbody>
+          <tfoot id="listaFoot"></tfoot>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- RELATÓRIO -->
+  <section id="tab-relatorio" style="display:none;">
+    <div class="card">
+      <h2>Relatório por período<span class="sub">Filtre por intervalo de datas, horário, sentido e tipo de dia.</span></h2>
+      <div class="row">
+        <div class="field"><label>Data início</label><input type="date" id="rDataIni"></div>
+        <div class="field"><label>Data fim</label><input type="date" id="rDataFim"></div>
+        <div class="field">
+          <label>Horário de</label>
+          <select id="rHorarioIni"><option value="">Todos</option></select>
+        </div>
+        <div class="field">
+          <label>Horário até</label>
+          <select id="rHorarioFim"><option value="">Todos</option></select>
+        </div>
+        <div class="field">
+          <label>Sentido</label>
+          <select id="rSentido">
+            <option value="">Todos</option>
+            <option value="Ida (Lagoa/Costa)">Ida (Lagoa/Costa)</option>
+            <option value="Volta (Costa/Lagoa)">Volta (Costa/Lagoa)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tipo de dia</label>
+          <select id="rDuFds">
+            <option value="">Todos</option>
+            <option value="DU">Dia útil (DU)</option>
+            <option value="FDS">Fim de semana (FDS)</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions-bar" style="margin-bottom:4px;">
+        <button class="primary" id="btnGerarRelatorio">Gerar relatório</button>
+        <button class="secondary" id="btnExportRelatorio">⇩ Exportar CSV</button>
+      </div>
+    </div>
+
+    <div id="relatorioResultados" style="display:none;">
+      <div class="summary-grid">
+        <div class="summary-card"><div class="n" id="sViagens">0</div><div class="l">Viagens no período</div></div>
+        <div class="summary-card"><div class="n" id="sPassageiros">0</div><div class="l">Total de passageiros</div></div>
+        <div class="summary-card"><div class="n" id="sMedia">0</div><div class="l">Média de passageiros / viagem</div></div>
+      </div>
+      <div class="card">
+        <h2>Detalhamento<span class="sub">Viagens que correspondem aos filtros selecionados.</span></h2>
+        <div class="table-wrap">
+          <table id="tabelaRelatorio">
+            <thead>
+              <tr>
+                <th>Data</th><th>Dia da Semana</th><th>DU/FDS</th><th>Horário</th><th>Sentido</th>
+                <th class="num">Morador</th><th class="num">N. Cad.</th><th class="num">Idosos</th>
+                <th class="num">Estud.</th><th class="num">Cç &lt;5</th><th class="num">Mãe Al.</th>
+                <th class="num">Gráv.</th><th class="num">PNE</th><th class="num">Total</th>
+              </tr>
+            </thead>
+            <tbody id="relBody"></tbody>
+            <tfoot id="relFoot"></tfoot>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div style="text-align:center;margin-top:4px;">
+  <button id="btnUnlockManager" style="background:none;border:none;color:var(--muted);font-size:0.75rem;cursor:pointer;text-decoration:underline;font-family:'Inter',sans-serif;">🔒 Acesso do gestor</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxPPTc04wIULWechn7Mz0vRMOGY5Fi3upreF6U8jUKFPHVGq7u2NfvDBAg7FhflQVvj/exec';
+const HORARIOS = ['5:00','5:45','6:30','7:00','7:10','7:45','8:10','8:30','9:30','9:40','11:00','11:45','13:00','14:00','14:20','15:10','16:15','17:10','17:40','18:30','19:00','19:40','20:30','21:30','22:40','23:30'];
+const DIAS_SEMANA = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+const COUNT_FIELDS = [
+  {id:'cMorador', key:'morador', label:'Morador'},
+  {id:'cNaoCad', key:'naoCadastrado', label:'Não Cadastrado'},
+  {id:'cIdosos', key:'idosos', label:'Idosos'},
+  {id:'cEstudantes', key:'estudantes', label:'Estudantes'},
+  {id:'cCriancas', key:'criancas5', label:'Crianças < 5 Anos'},
+  {id:'cMae', key:'maeAluno', label:'Mãe de Aluno'},
+  {id:'cGravidas', key:'gravidas', label:'Grávidas'},
+  {id:'cPne', key:'pne', label:'PNE'}
+];
+
+let entries = [];
+let managerToken = null; // preenchido só depois que o gestor digita o PIN correto
+
+function pad(n){return String(n).padStart(2,'0');}
+function toISODate(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function parseISODate(s){ // avoid timezone shift
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+function formatBR(s){
+  const [y,m,d] = s.split('-');
+  return d+'/'+m+'/'+y;
+}
+function diaSemanaDe(s){
+  return DIAS_SEMANA[parseISODate(s).getDay()];
+}
+function duFdsDe(s){
+  const dow = parseISODate(s).getDay();
+  return (dow === 0 || dow === 6) ? 'FDS' : 'DU';
+}
+
+function showToast(msg, isError){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = isError ? 'var(--bad)' : 'var(--navy)';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+// ---------- Armazenamento (Google Sheets via Apps Script) ----------
+async function sha256Hex(str){
+  const enc = new TextEncoder().encode(str);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function loadEntriesAuthed(token){
+  try{
+    const res = await fetch(APPS_SCRIPT_URL + '?action=list&token=' + encodeURIComponent(token));
+    const data = await res.json();
+    if(data && data.error) return {ok:false, data:[]};
+    return {ok:true, data: Array.isArray(data) ? data : []};
+  }catch(e){
+    return {ok:false, data:[]};
+  }
+}
+async function listEntriesByDateRemote(dateISO){
+  try{
+    const res = await fetch(APPS_SCRIPT_URL + '?action=listByDate&date=' + encodeURIComponent(dateISO));
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  }catch(e){
+    return [];
+  }
+}
+async function upsertDayRemote(dateISO, items){
+  try{
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'upsertDay', data: dateISO, items})
+    });
+    const data = await res.json();
+    return !!data.ok;
+  }catch(e){
+    return false;
+  }
+}
+
+async function deleteEntryRemote(id){
+  try{
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action:'delete', id, token: managerToken})
+    });
+    const data = await res.json();
+    return !!data.ok;
+  }catch(e){
+    return false;
+  }
+}
+async function refreshEntries(){
+  if(!managerToken) return;
+  const result = await loadEntriesAuthed(managerToken);
+  if(result.ok) entries = result.data;
+  populateReportHorarioOptions();
+  renderLista();
+}
+
+// ---------- Tabs ----------
+document.querySelectorAll('nav.tabs button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav.tabs button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    ['novo','lista','relatorio'].forEach(t=>{
+      document.getElementById('tab-'+t).style.display = (t===btn.dataset.tab) ? '' : 'none';
+    });
+    if(btn.dataset.tab === 'lista') renderLista();
+  });
+});
+
+// ---------- Novo Lançamento: grade do dia ----------
+const fData = document.getElementById('fData');
+const badgeDia = document.getElementById('badgeDia');
+const badgeDuFds = document.getElementById('badgeDuFds');
+const diaStatusMsg = document.getElementById('diaStatusMsg');
+const diaTableBody = document.getElementById('diaTableBody');
+
+function updateDateBadges(){
+  if(!fData.value) return;
+  const dia = diaSemanaDe(fData.value);
+  const duFds = duFdsDe(fData.value);
+  badgeDia.textContent = dia.charAt(0).toUpperCase()+dia.slice(1);
+  badgeDuFds.textContent = duFds === 'DU' ? 'Dia útil' : 'Fim de semana';
+  badgeDuFds.className = 'badge ' + (duFds === 'DU' ? 'du' : 'fds');
+  badgeDuFds.style.display = '';
+}
+
+function buildDiaTableRows(){
+  const sorted = [...HORARIOS].sort((a,b)=>toMinutes(a)-toMinutes(b));
+  diaTableBody.innerHTML = sorted.map(h=>{
+    const rid = h.replace(':','');
+    return `<tr data-horario="${h}">
+      <td class="horario-label">${h}</td>
+      <td>
+        <select class="sentidoSelect" data-h="${h}">
+          <option value="">— não houve —</option>
+          <option value="Ida (Lagoa/Costa)">Ida (Lagoa/Costa)</option>
+          <option value="Volta (Costa/Lagoa)">Volta (Costa/Lagoa)</option>
+        </select>
+      </td>
+      ${COUNT_FIELDS.map(f=>`<td><input type="text" inputmode="numeric" pattern="[0-9]*" class="rowCount" data-h="${h}" data-field="${f.key}" value="0"></td>`).join('')}
+      <td class="rowTotal" data-h="${h}">0</td>
+    </tr>`;
+  }).join('');
+
+  // Wire up listeners
+  diaTableBody.querySelectorAll('.rowCount').forEach(el=>{
+    el.addEventListener('input', ()=>{
+      el.value = el.value.replace(/[^0-9]/g,'');
+      recalcRowTotal(el.dataset.h);
+      markRowState(el.dataset.h);
+    });
+    el.addEventListener('focus', ()=> el.select());
+  });
+  diaTableBody.querySelectorAll('.sentidoSelect').forEach(el=>{
+    el.addEventListener('change', ()=>{
+      markRowState(el.dataset.h);
+    });
+  });
+}
+
+function recalcRowTotal(h){
+  const row = diaTableBody.querySelector(`tr[data-horario="${h}"]`);
+  let total = 0;
+  row.querySelectorAll('.rowCount').forEach(el=>{ total += Number(el.value || 0); });
+  row.querySelector('.rowTotal').textContent = total;
+  return total;
+}
+function markRowState(h){
+  const row = diaTableBody.querySelector(`tr[data-horario="${h}"]`);
+  const sel = row.querySelector('.sentidoSelect');
+  const filled = sel.value !== '';
+  sel.classList.toggle('filled', filled);
+  row.classList.toggle('linha-preenchida', filled);
+}
+
+function resetDiaTable(){
+  diaTableBody.querySelectorAll('tr').forEach(row=>{
+    row.querySelector('.sentidoSelect').value = '';
+    row.querySelectorAll('.rowCount').forEach(el=> el.value = '0');
+    row.querySelector('.rowTotal').textContent = '0';
+    row.classList.remove('linha-preenchida');
+    row.querySelector('.sentidoSelect').classList.remove('filled');
+  });
+}
+
+async function loadDayIntoTable(){
+  if(!fData.value) return;
+  diaStatusMsg.textContent = 'Carregando lançamentos do dia...';
+  resetDiaTable();
+  const dayEntries = await listEntriesByDateRemote(fData.value);
+  dayEntries.forEach(entry=>{
+    const row = diaTableBody.querySelector(`tr[data-horario="${entry.horario}"]`);
+    if(!row) return;
+    row.querySelector('.sentidoSelect').value = entry.sentido || '';
+    COUNT_FIELDS.forEach(f=>{
+      const input = row.querySelector(`.rowCount[data-field="${f.key}"]`);
+      if(input) input.value = entry[f.key] || 0;
+    });
+    recalcRowTotal(entry.horario);
+    markRowState(entry.horario);
+  });
+  diaStatusMsg.textContent = dayEntries.length
+    ? `${dayEntries.length} horário(s) já registrados nesse dia.`
+    : 'Nenhum horário registrado ainda nesse dia.';
+}
+
+fData.addEventListener('change', ()=>{
+  updateDateBadges();
+  loadDayIntoTable();
+});
+
+document.getElementById('btnSalvarDia').addEventListener('click', async ()=>{
+  if(!fData.value){ showToast('Selecione uma data.', true); return; }
+
+  const items = [];
+  diaTableBody.querySelectorAll('tr').forEach(row=>{
+    const sentido = row.querySelector('.sentidoSelect').value;
+    if(!sentido) return; // horário sem viagem nesse dia, ignora
+    const horario = row.dataset.horario;
+    const entry = {
+      id: Date.now().toString(36)+Math.random().toString(36).slice(2,7)+'-'+horario.replace(':',''),
+      data: fData.value,
+      diaSemana: diaSemanaDe(fData.value),
+      duFds: duFdsDe(fData.value),
+      horario: horario,
+      sentido: sentido,
+      criadoEm: new Date().toISOString()
+    };
+    COUNT_FIELDS.forEach(f=>{
+      const input = row.querySelector(`.rowCount[data-field="${f.key}"]`);
+      entry[f.key] = Number(input.value || 0);
+    });
+    entry.total = COUNT_FIELDS.reduce((s,f)=>s+entry[f.key],0);
+    items.push(entry);
+  });
+
+  if(items.length === 0){
+    showToast('Selecione o sentido de pelo menos um horário antes de salvar.', true);
+    return;
+  }
+
+  const btn = document.getElementById('btnSalvarDia');
+  btn.disabled = true;
+  const ok = await upsertDayRemote(fData.value, items);
+  btn.disabled = false;
+
+  if(ok){
+    showToast(`Dia salvo com sucesso! (${items.length} horário${items.length>1?'s':''})`);
+    await loadDayIntoTable();
+  }else{
+    showToast('Não foi possível salvar. Verifique a conexão e tente novamente.', true);
+  }
+});
+
+// ---------- Lista / Planilha ----------
+function rowCells(e){
+  return `<td>${formatBR(e.data)}</td><td>${cap(e.diaSemana)}</td><td>${e.duFds}</td><td>${e.horario}</td><td>${e.sentido}</td>`+
+    COUNT_FIELDS.map(f=>`<td class="num">${e[f.key]||0}</td>`).join('') +
+    `<td class="num" style="font-weight:700">${e.total}</td>`;
+}
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+function sortedEntries(list){
+  return [...list].sort((a,b)=> (a.data+a.horario).localeCompare(b.data+b.horario));
+}
+
+function renderLista(){
+  const body = document.getElementById('listaBody');
+  const foot = document.getElementById('listaFoot');
+  const count = document.getElementById('listaCount');
+  const sorted = sortedEntries(entries);
+  count.textContent = sorted.length + (sorted.length===1 ? ' lançamento' : ' lançamentos');
+
+  if(sorted.length===0){
+    body.innerHTML = `<tr><td colspan="15" class="empty">Nenhum lançamento registrado ainda. Use a aba "Novo Lançamento" para começar.</td></tr>`;
+    foot.innerHTML = '';
+    return;
+  }
+  body.innerHTML = sorted.map(e=>`<tr>${rowCells(e)}<td><button class="del-btn" data-id="${e.id}" title="Excluir">✕</button></td></tr>`).join('');
+  const totals = COUNT_FIELDS.map(f=> sorted.reduce((s,e)=>s+(e[f.key]||0),0));
+  const totalGeral = sorted.reduce((s,e)=>s+(e.total||0),0);
+  foot.innerHTML = `<tr><td colspan="5">TOTAL</td>${totals.map(t=>`<td class="num">${t}</td>`).join('')}<td class="num">${totalGeral}</td><td></td></tr>`;
+
+  body.querySelectorAll('.del-btn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.dataset.id;
+      btn.disabled = true;
+      const ok = await deleteEntryRemote(id);
+      if(ok){
+        entries = entries.filter(e=>e.id!==id);
+        showToast('Lançamento excluído.');
+        renderLista();
+        populateReportHorarioOptions();
+      }else{
+        btn.disabled = false;
+        showToast('Não foi possível excluir.', true);
+      }
+    });
+  });
+}
+
+function toCSV(list){
+  const header = ['Data','Dia da Semana','DU/FDS','Horário','Sentido',...COUNT_FIELDS.map(f=>f.label),'Total'];
+  const lines = [header.join(';')];
+  list.forEach(e=>{
+    const row = [formatBR(e.data), cap(e.diaSemana), e.duFds, e.horario, e.sentido, ...COUNT_FIELDS.map(f=>e[f.key]||0), e.total];
+    lines.push(row.join(';'));
+  });
+  return lines.join('\n');
+}
+function downloadCSV(content, filename){
+  const blob = new Blob(['\uFEFF'+content], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+document.getElementById('btnExportLista').addEventListener('click', ()=>{
+  downloadCSV(toCSV(sortedEntries(entries)), 'lancamentos_viagem_lagoa_costa.csv');
+});
+document.getElementById('btnRefreshLista').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btnRefreshLista');
+  btn.disabled = true;
+  await refreshEntries();
+  btn.disabled = false;
+  showToast('Lista atualizada.');
+});
+
+// ---------- Relatório ----------
+function toMinutes(h){
+  const [hh,mm] = h.split(':').map(Number);
+  return hh*60+mm;
+}
+function populateReportHorarioOptions(){
+  const selIni = document.getElementById('rHorarioIni');
+  const selFim = document.getElementById('rHorarioFim');
+  const currentIni = selIni.value;
+  const currentFim = selFim.value;
+  const all = [...HORARIOS].sort((a,b)=> toMinutes(a)-toMinutes(b));
+  const opts = '<option value="">Todos</option>' + all.map(h=>`<option value="${h}">${h}</option>`).join('');
+  selIni.innerHTML = opts;
+  selFim.innerHTML = opts;
+  selIni.value = currentIni || '';
+  selFim.value = currentFim || '';
+}
+
+let ultimoFiltro = [];
+
+function gerarRelatorio(){
+  const ini = document.getElementById('rDataIni').value;
+  const fim = document.getElementById('rDataFim').value;
+  const horarioIni = document.getElementById('rHorarioIni').value;
+  const horarioFim = document.getElementById('rHorarioFim').value;
+  const sentido = document.getElementById('rSentido').value;
+  const duFds = document.getElementById('rDuFds').value;
+
+  const minIni = horarioIni ? toMinutes(horarioIni) : null;
+  const minFim = horarioFim ? toMinutes(horarioFim) : null;
+
+  let filtrado = entries.filter(e=>{
+    if(ini && e.data < ini) return false;
+    if(fim && e.data > fim) return false;
+    if(minIni !== null && toMinutes(e.horario) < minIni) return false;
+    if(minFim !== null && toMinutes(e.horario) > minFim) return false;
+    if(sentido && e.sentido !== sentido) return false;
+    if(duFds && e.duFds !== duFds) return false;
+    return true;
+  });
+  filtrado = sortedEntries(filtrado);
+  ultimoFiltro = filtrado;
+
+  document.getElementById('relatorioResultados').style.display = '';
+  document.getElementById('sViagens').textContent = filtrado.length;
+  const totalPax = filtrado.reduce((s,e)=>s+(e.total||0),0);
+  document.getElementById('sPassageiros').textContent = totalPax;
+  document.getElementById('sMedia').textContent = filtrado.length ? (totalPax/filtrado.length).toFixed(1) : '0';
+
+  const body = document.getElementById('relBody');
+  const foot = document.getElementById('relFoot');
+  if(filtrado.length===0){
+    body.innerHTML = `<tr><td colspan="14" class="empty">Nenhuma viagem encontrada para os filtros selecionados.</td></tr>`;
+    foot.innerHTML = '';
+    return;
+  }
+  body.innerHTML = filtrado.map(e=>`<tr>${rowCells(e)}</tr>`).join('');
+  const totals = COUNT_FIELDS.map(f=> filtrado.reduce((s,e)=>s+(e[f.key]||0),0));
+  foot.innerHTML = `<tr><td colspan="5">TOTAL</td>${totals.map(t=>`<td class="num">${t}</td>`).join('')}<td class="num">${totalPax}</td></tr>`;
+}
+document.getElementById('btnGerarRelatorio').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btnGerarRelatorio');
+  btn.disabled = true;
+  if(managerToken){
+    const result = await loadEntriesAuthed(managerToken);
+    if(result.ok) entries = result.data;
+  }
+  gerarRelatorio();
+  btn.disabled = false;
+});
+document.getElementById('btnExportRelatorio').addEventListener('click', ()=>{
+  if(ultimoFiltro.length===0){ showToast('Gere o relatório antes de exportar.', true); return; }
+  downloadCSV(toCSV(ultimoFiltro), 'relatorio_viagem_lagoa_costa.csv');
+});
+
+document.getElementById('btnUnlockManager').addEventListener('click', async ()=>{
+  const pin = window.prompt('Digite o PIN de acesso do gestor:');
+  if(pin === null || pin === '') return;
+  const hash = await sha256Hex(pin);
+  const btn = document.getElementById('btnUnlockManager');
+  btn.disabled = true;
+  const result = await loadEntriesAuthed(hash);
+  btn.disabled = false;
+  if(result.ok){
+    managerToken = hash;
+    entries = result.data;
+    document.getElementById('tabBtnLista').style.display = '';
+    document.getElementById('tabBtnRelatorio').style.display = '';
+    populateReportHorarioOptions();
+    renderLista();
+    showToast('Acesso liberado.');
+  }else{
+    showToast('PIN incorreto.', true);
+  }
+});
+
+// ---------- Init ----------
+function init(){
+  const today = new Date();
+  fData.value = toISODate(today);
+  buildDiaTableRows();
+  updateDateBadges();
+  loadDayIntoTable();
+}
+init();
+</script>
+</body>
+</html>
