@@ -191,8 +191,8 @@
 
   <!-- NOVO LANÇAMENTO -->
   <section id="tab-novo">
-    <div class="card">
-      <h2>Registrar viagens do dia<span class="sub">Escolha a data — os horários certos (dia útil ou fim de semana) aparecem automaticamente. Marque só os que tiveram viagem.</span></h2>
+    <div class="card" id="editarCard">
+      <h2>Registrar viagens do dia<span class="sub">Escolha a data — os horários certos (dia útil ou fim de semana) aparecem automaticamente. Se esse dia já tiver sido enviado antes, os valores aparecem prontos para você conferir ou corrigir.</span></h2>
 
       <div class="row">
         <div class="field">
@@ -221,8 +221,29 @@
       </div>
 
       <div class="actions-bar" style="margin-top:18px;">
-        <button class="primary" id="btnSalvarDia">Salvar dia</button>
+        <button class="primary" id="btnRevisarDia">Revisar antes de enviar</button>
         <span style="font-size:0.8rem;color:var(--muted);" id="statusMsg"></span>
+      </div>
+    </div>
+
+    <div class="card" id="revisaoCard" style="display:none;">
+      <h2>Revisão do dia<span class="sub">Confira os horários abaixo. Se estiver tudo certo, salve. Se precisar corrigir algo, volte para a tela anterior.</span></h2>
+      <div class="table-wrap" style="max-height:none;">
+        <table id="revisaoTable">
+          <thead>
+            <tr>
+              <th>Horário</th><th>Sentido</th>
+              <th class="num">Morador</th><th class="num">N. Cad.</th><th class="num">Idosos</th>
+              <th class="num">Estud.</th><th class="num">Cç &lt;5</th><th class="num">Mãe Al.</th>
+              <th class="num">Gráv.</th><th class="num">PNE</th><th class="num">Total</th>
+            </tr>
+          </thead>
+          <tbody id="revisaoBody"></tbody>
+        </table>
+      </div>
+      <div class="actions-bar" style="margin-top:18px;">
+        <button class="secondary" id="btnVoltarCorrigir">◀ Voltar e corrigir</button>
+        <button class="primary" id="btnConfirmarSalvar">✓ Confirmar e salvar o dia</button>
       </div>
     </div>
   </section>
@@ -278,8 +299,6 @@ const FDS_SCHEDULE = [
   {horario:'11:30', sentido:'Volta (Costa/Lagoa)'},
   {horario:'21:00', sentido:'Volta (Costa/Lagoa)'}
 ];
-const DU_HORARIOS = Array.from(new Set(DU_SCHEDULE.map(x=>x.horario))).sort((a,b)=>toMinutes(a)-toMinutes(b));
-const FDS_HORARIOS = Array.from(new Set(FDS_SCHEDULE.map(x=>x.horario))).sort((a,b)=>toMinutes(a)-toMinutes(b));
 const DIAS_SEMANA = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
 const COUNT_FIELDS = [
   {id:'cMorador', key:'morador', label:'Morador'},
@@ -360,18 +379,15 @@ function updateDateBadges(){
   badgeDuFds.style.display = '';
 }
 
-function scheduleFor(duFds){
-  return duFds === 'FDS' ? FDS_HORARIOS : DU_HORARIOS;
-}
-
 function buildDiaTableRows(duFds){
-  const lista = scheduleFor(duFds);
-  diaTableBody.innerHTML = lista.map(h=>{
-    return `<tr data-horario="${h}">
-      <td class="horario-label">${h}</td>
+  const schedule = [...(duFds === 'FDS' ? FDS_SCHEDULE : DU_SCHEDULE)]
+    .sort((a,b)=>toMinutes(a.horario)-toMinutes(b.horario));
+  diaTableBody.innerHTML = schedule.map(item=>{
+    return `<tr data-horario="${item.horario}" data-sentido-padrao="${item.sentido}">
+      <td class="horario-label">${item.horario}</td>
       <td>
         <select class="sentidoSelect">
-          <option value="">— não houve —</option>
+          <option value="" disabled selected>Selecionar</option>
           <option value="Ida (Lagoa/Costa)">Ida (Lagoa/Costa)</option>
           <option value="Volta (Costa/Lagoa)">Volta (Costa/Lagoa)</option>
         </select>
@@ -388,49 +404,40 @@ function buildDiaTableRows(duFds){
     });
     el.addEventListener('focus', ()=> el.select());
   });
-  diaTableBody.querySelectorAll('.sentidoSelect').forEach(el=>{
-    el.addEventListener('change', ()=> markRowState(el.closest('tr')));
-  });
 }
 
 function recalcRowTotal(row){
   let total = 0;
   row.querySelectorAll('.rowCount').forEach(el=>{ total += Number(el.value || 0); });
   row.querySelector('.rowTotal').textContent = total;
+  row.classList.toggle('linha-preenchida', total > 0);
   return total;
-}
-function markRowState(row){
-  const sel = row.querySelector('.sentidoSelect');
-  const filled = sel.value !== '';
-  sel.classList.toggle('filled', filled);
-  row.classList.toggle('linha-preenchida', filled);
-}
-
-function resetDiaTable(){
-  diaTableBody.querySelectorAll('tr').forEach(row=>{
-    row.querySelector('.sentidoSelect').value = '';
-    row.querySelectorAll('.rowCount').forEach(el=> el.value = '0');
-    row.querySelector('.rowTotal').textContent = '0';
-    row.classList.remove('linha-preenchida');
-    row.querySelector('.sentidoSelect').classList.remove('filled');
-  });
 }
 
 async function loadDayIntoTable(){
   if(!fData.value) return;
+  const duFds = duFdsDe(fData.value);
   diaStatusMsg.textContent = 'Carregando lançamentos do dia...';
-  resetDiaTable();
+  buildDiaTableRows(duFds);
   const dayEntries = await listEntriesByDateRemote(fData.value);
+
+  // Alguns horários (ex.: 21:30 no DU, 08:00 no FDS) têm duas linhas na tabela
+  // (uma Ida, uma Volta). Para preencher cada uma corretamente, primeiro tenta
+  // casar pelo sentido salvo; se não achar, usa a próxima linha livre com o mesmo horário.
+  const claimed = new Set();
   dayEntries.forEach(entry=>{
-    const row = diaTableBody.querySelector(`tr[data-horario="${entry.horario}"]`);
+    const candidatos = Array.from(diaTableBody.querySelectorAll(`tr[data-horario="${entry.horario}"]`))
+      .filter(r=>!claimed.has(r));
+    let row = candidatos.find(r=> r.dataset.sentidoPadrao === entry.sentido);
+    if(!row) row = candidatos[0];
     if(!row) return;
-    row.querySelector('.sentidoSelect').value = entry.sentido || '';
+    claimed.add(row);
+    if(entry.sentido) row.querySelector('.sentidoSelect').value = entry.sentido;
     COUNT_FIELDS.forEach(f=>{
       const input = row.querySelector(`.rowCount[data-field="${f.key}"]`);
       if(input) input.value = entry[f.key] || 0;
     });
     recalcRowTotal(row);
-    markRowState(row);
   });
   diaStatusMsg.textContent = dayEntries.length
     ? `${dayEntries.length} horário(s) já registrados nesse dia.`
@@ -439,17 +446,13 @@ async function loadDayIntoTable(){
 
 fData.addEventListener('change', ()=>{
   updateDateBadges();
-  buildDiaTableRows(duFdsDe(fData.value));
   loadDayIntoTable();
 });
 
-document.getElementById('btnSalvarDia').addEventListener('click', async ()=>{
-  if(!fData.value){ showToast('Selecione uma data.', true); return; }
-
+function collectItems(){
   const items = [];
   diaTableBody.querySelectorAll('tr').forEach(row=>{
     const sentido = row.querySelector('.sentidoSelect').value;
-    if(!sentido) return; // horário sem viagem nesse dia, ignora
     const horario = row.dataset.horario;
     const entry = {
       id: Date.now().toString(36)+Math.random().toString(36).slice(2,7)+'-'+horario.replace(':',''),
@@ -467,19 +470,57 @@ document.getElementById('btnSalvarDia').addEventListener('click', async ()=>{
     entry.total = COUNT_FIELDS.reduce((s,f)=>s+entry[f.key],0);
     items.push(entry);
   });
+  return items;
+}
 
-  if(items.length === 0){
-    showToast('Selecione o sentido de pelo menos um horário antes de salvar.', true);
+function mostrarEdicao(){
+  document.getElementById('editarCard').style.display = '';
+  document.getElementById('revisaoCard').style.display = 'none';
+}
+function mostrarRevisao(items){
+  const body = document.getElementById('revisaoBody');
+  body.innerHTML = items.map(e=>{
+    return `<tr>
+      <td class="horario-label">${e.horario}</td>
+      <td>${e.sentido}</td>
+      ${COUNT_FIELDS.map(f=>`<td class="num">${e[f.key]}</td>`).join('')}
+      <td class="num" style="font-weight:700">${e.total}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('editarCard').style.display = 'none';
+  document.getElementById('revisaoCard').style.display = '';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+document.getElementById('btnRevisarDia').addEventListener('click', ()=>{
+  if(!fData.value){ showToast('Selecione uma data.', true); return; }
+
+  const linhaSemSentido = Array.from(diaTableBody.querySelectorAll('tr'))
+    .find(row => row.querySelector('.sentidoSelect').value === '');
+  if(linhaSemSentido){
+    showToast(`Selecione o sentido (Ida ou Volta) do horário ${linhaSemSentido.dataset.horario} antes de continuar.`, true);
+    linhaSemSentido.querySelector('.sentidoSelect').focus();
+    linhaSemSentido.scrollIntoView({behavior:'smooth', block:'center'});
     return;
   }
 
-  const btn = document.getElementById('btnSalvarDia');
+  mostrarRevisao(collectItems());
+});
+
+document.getElementById('btnVoltarCorrigir').addEventListener('click', ()=>{
+  mostrarEdicao();
+});
+
+document.getElementById('btnConfirmarSalvar').addEventListener('click', async ()=>{
+  const items = collectItems();
+  const btn = document.getElementById('btnConfirmarSalvar');
   btn.disabled = true;
   const ok = await upsertDayRemote(fData.value, items);
   btn.disabled = false;
 
   if(ok){
     showToast(`Dia salvo com sucesso! (${items.length} horário${items.length>1?'s':''})`);
+    mostrarEdicao();
     await loadDayIntoTable();
   }else{
     showToast('Não foi possível salvar. Verifique a conexão e tente novamente.', true);
@@ -497,7 +538,6 @@ function init(){
   const today = new Date();
   fData.value = toISODate(today);
   updateDateBadges();
-  buildDiaTableRows(duFdsDe(fData.value));
   loadDayIntoTable();
 }
 init();
