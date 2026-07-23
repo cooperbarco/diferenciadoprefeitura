@@ -171,6 +171,7 @@
   #diaTable .rowTotal{font-weight:700; color:var(--navy); text-align:right;}
   #diaTable tr.linha-preenchida{background:#fbf8f0;}
   #diaTable td.horario-label{font-weight:700; color:var(--navy); font-family:'Manrope',sans-serif;}
+
 </style>
 </head>
 <body>
@@ -191,7 +192,7 @@
   <!-- NOVO LANÇAMENTO -->
   <section id="tab-novo">
     <div class="card">
-      <h2>Registrar viagens do dia<span class="sub">Escolha a data e preencha só os horários que tiveram viagem — o resto pode ficar em branco.</span></h2>
+      <h2>Registrar viagens do dia<span class="sub">Escolha a data — os horários certos (dia útil ou fim de semana) aparecem automaticamente. Marque só os que tiveram viagem.</span></h2>
 
       <div class="row">
         <div class="field">
@@ -232,7 +233,53 @@
 
 <script>
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxPPTc04wIULWechn7Mz0vRMOGY5Fi3upreF6U8jUKFPHVGq7u2NfvDBAg7FhflQVvj/exec';
-const HORARIOS = ['5:00','5:45','6:30','7:00','7:10','7:45','8:10','8:30','9:30','9:40','11:00','11:45','13:00','14:00','14:20','15:10','16:15','17:10','17:40','18:30','19:00','19:40','20:30','21:30','22:40','23:30'];
+const DU_SCHEDULE = [
+  {horario:'07:10', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'08:10', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'09:40', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'14:20', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'15:10', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'16:15', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'17:10', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'17:40', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'18:30', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'19:00', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'19:40', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'20:30', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'21:30', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'22:40', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'23:30', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'05:00', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'05:45', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'06:30', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'07:00', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'07:45', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'08:30', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'09:30', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'11:00', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'11:45', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'13:00', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'14:00', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'21:30', sentido:'Volta (Costa/Lagoa)'}
+];
+const FDS_SCHEDULE = [
+  {horario:'08:00', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'09:00', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'16:00', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'17:10', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'18:40', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'20:00', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'22:00', sentido:'Ida (Lagoa/Costa)'},
+  {horario:'06:00', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'07:15', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'08:00', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'09:40', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'10:30', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'11:30', sentido:'Volta (Costa/Lagoa)'},
+  {horario:'21:00', sentido:'Volta (Costa/Lagoa)'}
+];
+const DU_HORARIOS = Array.from(new Set(DU_SCHEDULE.map(x=>x.horario))).sort((a,b)=>toMinutes(a)-toMinutes(b));
+const FDS_HORARIOS = Array.from(new Set(FDS_SCHEDULE.map(x=>x.horario))).sort((a,b)=>toMinutes(a)-toMinutes(b));
 const DIAS_SEMANA = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
 const COUNT_FIELDS = [
   {id:'cMorador', key:'morador', label:'Morador'},
@@ -313,49 +360,46 @@ function updateDateBadges(){
   badgeDuFds.style.display = '';
 }
 
-function buildDiaTableRows(){
-  const sorted = [...HORARIOS].sort((a,b)=>toMinutes(a)-toMinutes(b));
-  diaTableBody.innerHTML = sorted.map(h=>{
-    const rid = h.replace(':','');
+function scheduleFor(duFds){
+  return duFds === 'FDS' ? FDS_HORARIOS : DU_HORARIOS;
+}
+
+function buildDiaTableRows(duFds){
+  const lista = scheduleFor(duFds);
+  diaTableBody.innerHTML = lista.map(h=>{
     return `<tr data-horario="${h}">
       <td class="horario-label">${h}</td>
       <td>
-        <select class="sentidoSelect" data-h="${h}">
+        <select class="sentidoSelect">
           <option value="">— não houve —</option>
           <option value="Ida (Lagoa/Costa)">Ida (Lagoa/Costa)</option>
           <option value="Volta (Costa/Lagoa)">Volta (Costa/Lagoa)</option>
         </select>
       </td>
-      ${COUNT_FIELDS.map(f=>`<td><input type="text" inputmode="numeric" pattern="[0-9]*" class="rowCount" data-h="${h}" data-field="${f.key}" value="0"></td>`).join('')}
-      <td class="rowTotal" data-h="${h}">0</td>
+      ${COUNT_FIELDS.map(f=>`<td><input type="text" inputmode="numeric" pattern="[0-9]*" class="rowCount" data-field="${f.key}" value="0"></td>`).join('')}
+      <td class="rowTotal">0</td>
     </tr>`;
   }).join('');
 
-  // Wire up listeners
   diaTableBody.querySelectorAll('.rowCount').forEach(el=>{
     el.addEventListener('input', ()=>{
       el.value = el.value.replace(/[^0-9]/g,'');
-      recalcRowTotal(el.dataset.h);
-      markRowState(el.dataset.h);
+      recalcRowTotal(el.closest('tr'));
     });
     el.addEventListener('focus', ()=> el.select());
   });
   diaTableBody.querySelectorAll('.sentidoSelect').forEach(el=>{
-    el.addEventListener('change', ()=>{
-      markRowState(el.dataset.h);
-    });
+    el.addEventListener('change', ()=> markRowState(el.closest('tr')));
   });
 }
 
-function recalcRowTotal(h){
-  const row = diaTableBody.querySelector(`tr[data-horario="${h}"]`);
+function recalcRowTotal(row){
   let total = 0;
   row.querySelectorAll('.rowCount').forEach(el=>{ total += Number(el.value || 0); });
   row.querySelector('.rowTotal').textContent = total;
   return total;
 }
-function markRowState(h){
-  const row = diaTableBody.querySelector(`tr[data-horario="${h}"]`);
+function markRowState(row){
   const sel = row.querySelector('.sentidoSelect');
   const filled = sel.value !== '';
   sel.classList.toggle('filled', filled);
@@ -385,8 +429,8 @@ async function loadDayIntoTable(){
       const input = row.querySelector(`.rowCount[data-field="${f.key}"]`);
       if(input) input.value = entry[f.key] || 0;
     });
-    recalcRowTotal(entry.horario);
-    markRowState(entry.horario);
+    recalcRowTotal(row);
+    markRowState(row);
   });
   diaStatusMsg.textContent = dayEntries.length
     ? `${dayEntries.length} horário(s) já registrados nesse dia.`
@@ -395,6 +439,7 @@ async function loadDayIntoTable(){
 
 fData.addEventListener('change', ()=>{
   updateDateBadges();
+  buildDiaTableRows(duFdsDe(fData.value));
   loadDayIntoTable();
 });
 
@@ -451,8 +496,8 @@ function toMinutes(h){
 function init(){
   const today = new Date();
   fData.value = toISODate(today);
-  buildDiaTableRows();
   updateDateBadges();
+  buildDiaTableRows(duFdsDe(fData.value));
   loadDayIntoTable();
 }
 init();
