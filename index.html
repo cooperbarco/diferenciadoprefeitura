@@ -192,7 +192,7 @@
   <!-- NOVO LANÇAMENTO -->
   <section id="tab-novo">
     <div class="card" id="editarCard">
-      <h2>Registrar viagens do dia<span class="sub">Escolha a data — os horários certos (dia útil ou fim de semana) aparecem automaticamente. Se esse dia já tiver sido enviado antes, os valores aparecem prontos para você conferir ou corrigir.</span></h2>
+      <h2>Registrar viagens do dia<span class="sub">Escolha a data — os horários certos (dia útil ou fim de semana) aparecem automaticamente. Pode preencher só os horários que já aconteceram e completar o resto depois — não precisa preencher tudo de uma vez. Se esse dia já tiver algo salvo, os valores aparecem prontos para conferir ou corrigir.</span></h2>
 
       <div class="row">
         <div class="field">
@@ -453,6 +453,7 @@ function collectItems(){
   const items = [];
   diaTableBody.querySelectorAll('tr').forEach(row=>{
     const sentido = row.querySelector('.sentidoSelect').value;
+    if(!sentido) return; // horário ainda não preenchido — pula, pode ser feito depois
     const horario = row.dataset.horario;
     const entry = {
       id: Date.now().toString(36)+Math.random().toString(36).slice(2,7)+'-'+horario.replace(':',''),
@@ -495,16 +496,13 @@ function mostrarRevisao(items){
 document.getElementById('btnRevisarDia').addEventListener('click', ()=>{
   if(!fData.value){ showToast('Selecione uma data.', true); return; }
 
-  const linhaSemSentido = Array.from(diaTableBody.querySelectorAll('tr'))
-    .find(row => row.querySelector('.sentidoSelect').value === '');
-  if(linhaSemSentido){
-    showToast(`Selecione o sentido (Ida ou Volta) do horário ${linhaSemSentido.dataset.horario} antes de continuar.`, true);
-    linhaSemSentido.querySelector('.sentidoSelect').focus();
-    linhaSemSentido.scrollIntoView({behavior:'smooth', block:'center'});
+  const items = collectItems();
+  if(items.length === 0){
+    showToast('Preencha o sentido de pelo menos um horário antes de continuar.', true);
     return;
   }
 
-  mostrarRevisao(collectItems());
+  mostrarRevisao(items);
 });
 
 document.getElementById('btnVoltarCorrigir').addEventListener('click', ()=>{
